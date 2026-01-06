@@ -4,6 +4,10 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+class ClothingItem(BaseModel):
+    name: str
+    category: str
+
 @app.get("/")
 def root():
     return {"message": "Hello Closet App"}
@@ -11,7 +15,7 @@ def root():
 def health_check():
     return {"status": "ok"}
 @app.post("/clothes")
-def add_clothing(item = Body(...)):
+def add_clothing(item: ClothingItem):
     return {
         "received": item
     }
