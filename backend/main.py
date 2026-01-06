@@ -4,6 +4,9 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+clothes_db = []
+#list for clothing
+
 class ClothingItem(BaseModel):
     name: str
     category: str
@@ -16,7 +19,13 @@ def health_check():
     return {"status": "ok"}
 @app.post("/clothes")
 def add_clothing(item: ClothingItem):
+    clothes_db.append(item)
     return {
-        "received": item
+        "message": "Item added",
+        "total_items": len(clothes_db)
     }
+@app.get("/clothes")
+def get_clothes():
+    return clothes_db
+
 
