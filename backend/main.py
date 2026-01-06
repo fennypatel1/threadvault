@@ -24,8 +24,8 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "ok"}
-@app.post("/clothes")
-def add_clothing(item: ClothingItem):
+@app.post("/clothes", response_model=ClothingItem)
+def add_clothing(item: ClothingItemCreate):
     new_item = ClothingItem(
         id=str(uuid.uuid4()),
         name=item.name,
