@@ -45,4 +45,12 @@ def get_clothing_by_id(item_id: str):
 
     raise HTTPException(status_code=404, detail="Clothing item not found")
 
+@app.delete("/clothes/{item_id}")
+def delete_clothing(item_id: str):
+    for index, item in enumerate(clothes_db):
+        if item.id == item_id:
+            clothes_db.pop(index)
+            return {"message": "Clothing item deleted"}
+
+    raise HTTPException(status_code=404, detail="Clothing item not found")
 
