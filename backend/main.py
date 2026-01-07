@@ -2,6 +2,7 @@ from fastapi import FastAPI, Body
 #body is data from request
 from pydantic import BaseModel
 import uuid
+from fastapi import HTTPException
 
 
 app = FastAPI()
@@ -36,5 +37,12 @@ def add_clothing(item: ClothingItemCreate):
 @app.get("/clothes")
 def get_clothes():
     return clothes_db
+@app.get("/clothes/{item_id}", response_model=ClothingItem)
+def get_clothing_by_id(item_id: str):
+    for item in clothes_db:
+        if item.id == item_id:
+            return item
+
+    raise HTTPException(status_code=404, detail="Clothing item not found")
 
 
