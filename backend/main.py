@@ -54,3 +54,15 @@ def delete_clothing(item_id: str):
 
     raise HTTPException(status_code=404, detail="Clothing item not found")
 
+@app.put("/clothes/{item_id}", response_model=ClothingItem)
+def update_clothing(item_id: str, updated_item: ClothingItemCreate):
+    for index, item in enumerate(clothes_db):
+        if item.id == item_id:
+            clothes_db[index] = ClothingItem(
+                id=item.id,
+                name=updated_item.name,
+                category=updated_item.category
+            )
+            return clothes_db[index]
+
+    raise HTTPException(status_code=404, detail="Clothing item not found")
