@@ -38,11 +38,20 @@ export default function ClothingCard({
         />
       )}
 
+      {/* EDIT BUTTON (NEW) */}
+      <a
+        href={`/edit/${item.id}`}
+        className="absolute top-2 left-2 text-xs bg-blue-600 text-white px-2 py-1 rounded"
+      >
+        Edit
+      </a>
+
       <div className="mt-2">
         <h3 className="font-semibold">{item.name}</h3>
         <p className="text-sm text-gray-500">{item.category}</p>
       </div>
 
+      {/* DELETE BUTTON */}
       <button
         onClick={handleDelete}
         className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-1 rounded"

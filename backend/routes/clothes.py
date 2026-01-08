@@ -1,8 +1,9 @@
 import os
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, HTTPException, Form
 import uuid
 from fastapi import APIRouter, HTTPException
-from backend.db import cursor, conn, DB_PATH
+from ..db import cursor, conn, DB_PATH
+
 from backend.models import ClothingItem, ClothingItemCreate
 
 filename = None
@@ -82,21 +83,58 @@ def get_clothing_by_id(item_id: str):
     return ClothingItem(id=row[0], name=row[1], category=row[2])
 
 @router.put("/clothes/{item_id}", response_model=ClothingItem)
-def update_clothing(item_id: str, updated_item: ClothingItemCreate):
+def update_clothing(
+    item_id: str,
+    name: str = Form(...),
+    category: str = Form(...),
+    image: UploadFile = File(None),
+):
     cursor.execute(
-        "UPDATE clothes SET name = ?, category = ? WHERE id = ?",
-        (updated_item.name, updated_item.category, item_id)
+        "SELECT image_path FROM clothes WHERE id = ?",
+        (item_id,),
+    )
+    row = cursor.fetchone()
+
+    if row is None:
+        raise HTTPException(status_code=404, detail="Clothing item not found")
+
+    old_image_path = row[0]
+    new_image_path = old_image_path
+
+    if image:
+        if old_image_path and os.path.exists(old_image_path):
+            os.remove(old_image_path)
+
+        safe_name = image.filename.replace(" ", "_").lower()
+        filename = f"{item_id}_{safe_name}"
+        new_image_path = os.path.join("backend/images", filename)
+
+        with open(new_image_path, "wb") as f:
+            f.write(image.file.read())
+
+    cursor.execute(
+        """
+        UPDATE clothes
+        SET name = ?, category = ?, image_path = ?
+        WHERE id = ?
+        """,
+        (name, category, new_image_path, item_id),
     )
     conn.commit()
 
-    if cursor.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Clothing item not found")
+    image_url = (
+        f"/images/{os.path.basename(new_image_path)}"
+        if new_image_path
+        else None
+    )
 
     return ClothingItem(
         id=item_id,
-        name=updated_item.name,
-        category=updated_item.category
+        name=name,
+        category=category,
+        image_url=image_url,
     )
+
 
 @router.delete("/clothes/{item_id}")
 def delete_clothing(item_id: str):
