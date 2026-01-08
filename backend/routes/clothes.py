@@ -42,13 +42,31 @@ def add_clothing(
 
 @router.get("/clothes", response_model=list[ClothingItem])
 def get_clothes():
-    cursor.execute("SELECT id, name, category FROM clothes")
+    cursor.execute(
+        "SELECT id, name, category, image_path FROM clothes"
+    )
     rows = cursor.fetchall()
 
-    return [
-        ClothingItem(id=row[0], name=row[1], category=row[2])
-        for row in rows
-    ]
+    results = []
+    for row in rows:
+        image_path = row[3]
+        image_url = (
+            f"/images/{image_path.split('/')[-1]}"
+            if image_path
+            else None
+        )
+
+        results.append(
+            ClothingItem(
+                id=row[0],
+                name=row[1],
+                category=row[2],
+                image_url=image_url
+            )
+        )
+
+    return results
+
 
 @router.get("/clothes/{item_id}", response_model=ClothingItem)
 def get_clothing_by_id(item_id: str):
