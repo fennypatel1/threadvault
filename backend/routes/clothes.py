@@ -2,7 +2,7 @@ import os
 from fastapi import UploadFile, File
 import uuid
 from fastapi import APIRouter, HTTPException
-from backend.db import cursor, conn
+from backend.db import cursor, conn, DB_PATH
 from backend.models import ClothingItem, ClothingItemCreate
 
 filename = None
