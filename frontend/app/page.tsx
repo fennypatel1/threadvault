@@ -25,6 +25,10 @@ export default function Home() {
     fetchClothes()
   }, [])
 
+  function handleDelete(id: string) {
+    setClothes((prev) => prev.filter((item) => item.id !== id))
+  }
+
   if (loading) {
     return <p className="p-6">Loading...</p>
   }
@@ -45,7 +49,11 @@ export default function Home() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {clothes.map((item) => (
-            <ClothingCard key={item.id} item={item} />
+            <ClothingCard
+              key={item.id}
+              item={item}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}

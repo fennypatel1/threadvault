@@ -100,10 +100,24 @@ def update_clothing(item_id: str, updated_item: ClothingItemCreate):
 
 @router.delete("/clothes/{item_id}")
 def delete_clothing(item_id: str):
-    cursor.execute("DELETE FROM clothes WHERE id = ?", (item_id,))
-    conn.commit()
+    cursor.execute(
+        "SELECT image_path FROM clothes WHERE id = ?",
+        (item_id,)
+    )
+    row = cursor.fetchone()
 
-    if cursor.rowcount == 0:
+    if row is None:
         raise HTTPException(status_code=404, detail="Clothing item not found")
+
+    image_path = row[0]
+
+    if image_path and os.path.exists(image_path):
+        os.remove(image_path)
+
+    cursor.execute(
+        "DELETE FROM clothes WHERE id = ?",
+        (item_id,)
+    )
+    conn.commit()
 
     return {"message": "Clothing item deleted"}
