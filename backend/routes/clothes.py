@@ -1,26 +1,44 @@
+import os
+from fastapi import UploadFile, File
 import uuid
 from fastapi import APIRouter, HTTPException
 from backend.db import cursor, conn
 from backend.models import ClothingItem, ClothingItemCreate
 
+filename = None
 
 router = APIRouter()
 
 @router.post("/clothes", response_model=ClothingItem)
-def add_clothing(item: ClothingItemCreate):
+def add_clothing(
+    name: str,
+    category: str,
+    image: UploadFile = File(None)
+):
     item_id = str(uuid.uuid4())
+    image_path = None
+
+    if image:
+        os.makedirs("backend/images", exist_ok=True)
+        filename = f"{item_id}_{image.filename}"
+        image_path = f"backend/images/{filename}"
+
+        with open(image_path, "wb") as f:
+            f.write(image.file.read())
 
     cursor.execute(
-        "INSERT INTO clothes (id, name, category) VALUES (?, ?, ?)",
-        (item_id, item.name, item.category)
+        "INSERT INTO clothes (id, name, category, image_path) VALUES (?, ?, ?, ?)",
+        (item_id, name, category, image_path)
     )
     conn.commit()
 
     return ClothingItem(
-        id=item_id,
-        name=item.name,
-        category=item.category
-    )
+    id=item_id,
+    name=name,
+    category=category,
+    image_url=f"/images/{filename}" if filename else None
+)
+
 
 @router.get("/clothes", response_model=list[ClothingItem])
 def get_clothes():

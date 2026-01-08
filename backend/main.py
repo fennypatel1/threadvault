@@ -1,8 +1,10 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from backend.routes.clothes import router as clothes_router
 
-
 app = FastAPI()
+
+app.mount("/images", StaticFiles(directory="backend/images"), name="images")
 
 @app.get("/")
 def root():
