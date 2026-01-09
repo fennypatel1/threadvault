@@ -14,7 +14,9 @@ export default function EditPage() {
 
   useEffect(() => {
     async function fetchItem() {
-      const res = await fetch(`http://127.0.0.1:8000/clothes/${id}`)
+      const res = await fetch(
+        `http://127.0.0.1:8000/clothes/${id}`
+      )
       const data = await res.json()
       setName(data.name)
       setCategory(data.category)
@@ -30,16 +32,18 @@ export default function EditPage() {
     const formData = new FormData()
     formData.append("name", name)
     formData.append("category", category)
-    if (image) {
-      formData.append("image", image)
-    }
+    if (image) formData.append("image", image)
 
-    await fetch(`http://127.0.0.1:8000/clothes/${id}`, {
-      method: "PUT",
-      body: formData,
-    })
+    await fetch(
+      `http://127.0.0.1:8000/clothes/${id}`,
+      {
+        method: "PUT",
+        body: formData,
+      }
+    )
 
     router.push("/")
+    router.refresh()
   }
 
   if (loading) {
@@ -47,36 +51,90 @@ export default function EditPage() {
   }
 
   return (
-    <main className="p-6 max-w-md">
-      <h1 className="text-2xl font-bold mb-4">Edit Item</h1>
+    <main className="min-h-screen flex items-center justify-center px-6">
+      <div
+        className="
+          w-full max-w-md
+          bg-[var(--foreground)]
+          text-[var(--background)]
+          rounded-3xl
+          p-8
+          shadow-sm
+        "
+      >
+        <h1 className="text-2xl font-medium mb-1">
+          Edit Item
+        </h1>
+        <p className="text-sm text-[var(--muted)] mb-6">
+          Update details or replace the image
+        </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          className="border p-2 w-full rounded"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm mb-1 text-[var(--muted)]">
+              Item name
+            </label>
+            <input
+              className="
+                w-full rounded-xl px-4 py-3
+                bg-transparent
+                border border-[var(--muted)]/30
+                focus:outline-none
+                focus:ring-2 focus:ring-[var(--accent)]
+              "
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          className="border p-2 w-full rounded"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-        />
+          <div>
+            <label className="block text-sm mb-1 text-[var(--muted)]">
+              Category
+            </label>
+            <input
+              className="
+                w-full rounded-xl px-4 py-3
+                bg-transparent
+                border border-[var(--muted)]/30
+                focus:outline-none
+                focus:ring-2 focus:ring-[var(--accent)]
+              "
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            />
+          </div>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) =>
-            setImage(e.target.files?.[0] ?? null)
-          }
-        />
+          <div>
+            <label className="block text-sm mb-1 text-[var(--muted)]">
+              Replace image (optional)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                setImage(e.target.files?.[0] ?? null)
+              }
+              className="text-sm"
+            />
+          </div>
 
-        <button className="bg-black text-white px-4 py-2 rounded">
-          Save changes
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="
+              w-full mt-4 py-3 rounded-xl
+              bg-[var(--accent)]
+              text-[var(--foreground)]
+              font-medium
+              hover:opacity-90
+              transition
+            "
+          >
+            Save changes
+          </button>
+        </form>
+      </div>
     </main>
   )
 }
