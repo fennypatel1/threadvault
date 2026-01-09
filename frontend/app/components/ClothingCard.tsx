@@ -29,35 +29,74 @@ export default function ClothingCard({
   }
 
   return (
-    <div className="border rounded-lg p-3 shadow-sm relative">
+    <div
+      className="
+        relative
+        bg-[var(--foreground)]
+        text-[var(--background)]
+        rounded-2xl
+        overflow-hidden
+        shadow-sm
+        hover:shadow-md
+        transition-all
+        duration-300
+      "
+    >
       {item.image_url && (
         <img
           src={`http://127.0.0.1:8000${item.image_url}`}
           alt={item.name}
-          className="w-full h-48 object-cover rounded"
+          className="
+            w-full
+            h-60
+            object-cover
+            transition-transform
+            duration-500
+            hover:scale-[1.02]
+          "
         />
       )}
 
-      {/* EDIT BUTTON (NEW) */}
+      {/* Edit button */}
       <a
         href={`/edit/${item.id}`}
-        className="absolute top-2 left-2 text-xs bg-blue-600 text-white px-2 py-1 rounded"
+        className="
+          absolute top-3 left-3
+          text-xs px-3 py-1 rounded-full
+          bg-[var(--foreground)]/80
+          text-[var(--background)]
+          backdrop-blur
+          hover:bg-[var(--foreground)]
+          transition
+        "
       >
         Edit
       </a>
 
-      <div className="mt-2">
-        <h3 className="font-semibold">{item.name}</h3>
-        <p className="text-sm text-gray-500">{item.category}</p>
-      </div>
-
-      {/* DELETE BUTTON */}
+      {/* Delete button */}
       <button
         onClick={handleDelete}
-        className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-1 rounded"
+        className="
+          absolute top-3 right-3
+          text-xs px-3 py-1 rounded-full
+          bg-[var(--background)]/70
+          text-[var(--foreground)]
+          backdrop-blur
+          hover:bg-[var(--background)]
+          transition
+        "
       >
         Delete
       </button>
+
+      <div className="p-4">
+        <h3 className="font-medium text-lg leading-tight">
+          {item.name}
+        </h3>
+        <p className="text-sm text-[var(--muted)] capitalize">
+          {item.category}
+        </p>
+      </div>
     </div>
   )
 }

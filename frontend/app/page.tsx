@@ -34,8 +34,16 @@ export default function Home() {
   }
 
   return (
-    <main className="p-6">
-      <h1 className="text-3xl font-bold mb-2">My Closet</h1>
+    <main className="max-w-7xl mx-auto px-6 py-12">
+
+      <h1 className="text-4xl font-medium tracking-tight mb-1">
+  ThreadVault
+</h1>
+<p className="text-[var(--muted)] mb-10">
+  Your digital wardrobe
+</p>
+
+
 
       <a
         href="/upload"
@@ -47,7 +55,9 @@ export default function Home() {
       {clothes.length === 0 ? (
         <p className="text-gray-500">No clothes yet.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
+
+
           {clothes.map((item) => (
             <ClothingCard
               key={item.id}
