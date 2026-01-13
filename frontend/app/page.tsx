@@ -12,6 +12,16 @@ type ClothingItem = {
 
 const CATEGORIES = ["all", "shirt", "pants", "jacket", "shoes"]
 
+function countByCategory(
+  clothes: ClothingItem[],
+  category: string
+) {
+  if (category === "all") return clothes.length
+  return clothes.filter(
+    (item) => item.category.toLowerCase() === category
+  ).length
+}
+
 export default function Home() {
   const [clothes, setClothes] = useState<ClothingItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,7 +114,7 @@ export default function Home() {
                 }
               `}
             >
-              {category}
+              {category} · {countByCategory(clothes, category)}
             </button>
           ))}
         </div>
@@ -129,10 +139,16 @@ export default function Home() {
 
       {/* Grid */}
       {filteredClothes.length === 0 ? (
-        <p className="text-[var(--muted)]">
-          No items match your filters.
-        </p>
-      ) : (
+  <div className="py-24 text-center">
+    <p className="text-lg mb-2">
+      Nothing here yet
+    </p>
+    <p className="text-[var(--muted)]">
+      Try adjusting filters or add your first piece.
+    </p>
+  </div>
+) : (
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
           {filteredClothes.map((item) => (
             <ClothingCard
