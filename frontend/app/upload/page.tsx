@@ -10,6 +10,7 @@ export default function UploadPage() {
   const [category, setCategory] = useState("")
   const [image, setImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,12 +22,17 @@ export default function UploadPage() {
     if (image) formData.append("image", image)
 
     await fetch("http://127.0.0.1:8000/clothes", {
-      method: "POST",
-      body: formData,
-    })
+  method: "POST",
+  body: formData,
+})
 
-    router.push("/")
-    router.refresh()
+setSuccess(true) // 👈 ADD
+
+setTimeout(() => {
+  router.push("/")
+  router.refresh()
+}, 800)
+
   }
 
   return (
@@ -47,6 +53,11 @@ export default function UploadPage() {
         <p className="text-sm text-[var(--muted)] mb-6">
           Upload a new piece to your closet
         </p>
+        {success && (
+        <div className="mb-4 rounded-xl bg-[var(--accent)]/20 text-[var(--foreground)] px-4 py-3 text-sm">
+          Added to your closet ✨
+        </div>
+      )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
