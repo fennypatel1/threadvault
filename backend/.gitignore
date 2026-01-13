@@ -1,1 +1,3 @@
-backend/threadvault.db
+threadvault.db
+images/
+__pycache__/

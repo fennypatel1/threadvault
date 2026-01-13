@@ -18,14 +18,27 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
 
-  useEffect(() => {
-    async function fetchClothes() {
-      const res = await fetch("http://127.0.0.1:8000/clothes")
-      const data = await res.json()
-      setClothes(data)
-      setLoading(false)
+  async function fetchClothes() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/clothes", {
+      cache: "no-store",
+    })
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch clothes")
     }
 
+    const data = await res.json()
+    setClothes(data)
+  } catch (err) {
+    console.error("Fetch clothes error:", err)
+  } finally {
+    setLoading(false)
+  }
+}
+
+
+  useEffect(() => {
     fetchClothes()
   }, [])
 
@@ -50,12 +63,29 @@ export default function Home() {
   return (
     <main className="max-w-7xl mx-auto px-6 py-12">
       {/* Header */}
-      <h1 className="text-4xl font-medium tracking-tight mb-1">
-        ThreadVault
-      </h1>
-      <p className="text-[var(--muted)] mb-8">
-        Your digital wardrobe
-      </p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-4xl font-medium tracking-tight mb-1">
+            ThreadVault
+          </h1>
+          <p className="text-[var(--muted)]">
+            Your digital wardrobe
+          </p>
+        </div>
+
+        <a
+          href="/upload"
+          className="
+            px-5 py-3 rounded-xl text-sm font-medium
+            bg-[var(--accent)]
+            text-[var(--foreground)]
+            hover:opacity-90
+            transition
+          "
+        >
+          Upload
+        </a>
+      </div>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
@@ -66,8 +96,7 @@ export default function Home() {
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`
-                px-4 py-2 rounded-full text-sm capitalize
-                transition
+                px-4 py-2 rounded-full text-sm capitalize transition
                 ${
                   selectedCategory === category
                     ? "bg-[var(--accent)] text-[var(--foreground)]"

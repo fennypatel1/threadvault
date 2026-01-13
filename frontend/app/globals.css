@@ -5,11 +5,11 @@
    ========================= */
 
 :root {
-  --background: #f5f3ef; /* Charcoal Black */
-  --foreground: #f5f3ef; /* Soft Ivory */
+  --background: #cecece; /* Charcoal Black */
+  --foreground: #393938; /* Soft Ivory */
 
-  --muted: #c8c2b8;      /* Warm Taupe */
-  --accent: #c96a3a;     /* Burnt Orange */
+  --muted: #496468;      /* Warm Taupe */
+  --accent: #8fbecd;     /* Burnt Orange */
 }
 
 /* Optional system dark/light support later */
