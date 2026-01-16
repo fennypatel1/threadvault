@@ -11,20 +11,37 @@ export default function EditPage() {
   const [category, setCategory] = useState("")
   const [image, setImage] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null)
+
+
 
   useEffect(() => {
-    async function fetchItem() {
-      const res = await fetch(
-        `http://127.0.0.1:8000/clothes/${id}`
-      )
-      const data = await res.json()
-      setName(data.name)
-      setCategory(data.category)
-      setLoading(false)
-    }
+  async function fetchItem() {
+    const res = await fetch(
+      `http://127.0.0.1:8000/clothes/${id}`
+    )
+    const data = await res.json()
 
-    fetchItem()
-  }, [id])
+    setName(data.name)
+    setCategory(data.category)
+    setCurrentImageUrl(data.image_url ?? null)
+    setLoading(false)
+  }
+
+  fetchItem()
+}, [id])
+
+  function handleImageChange(
+  e: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  setImage(file)
+  setPreview(URL.createObjectURL(file))
+}
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -106,19 +123,53 @@ export default function EditPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm mb-1 text-[var(--muted)]">
-              Replace image (optional)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                setImage(e.target.files?.[0] ?? null)
-              }
-              className="text-sm"
-            />
-          </div>
+          {/* Image */}
+<div className="space-y-3">
+  <label className="block text-sm text-[var(--muted)]">
+    Image
+  </label>
+
+  {/* Hidden file input */}
+  <input
+    id="image-upload"
+    type="file"
+    accept="image/*"
+    onChange={handleImageChange}
+    className="hidden"
+  />
+
+  {/* Upload / Replace button */}
+  <label
+    htmlFor="image-upload"
+    className="
+      cursor-pointer
+      flex items-center justify-center gap-2
+      rounded-xl border border-dashed
+      border-[var(--muted)]/40
+      bg-[var(--foreground)]/5
+      px-4 py-6
+      text-sm font-medium
+      text-[var(--muted)]
+      hover:bg-[var(--foreground)]/10
+      transition
+    "
+  >
+    <span className="text-lg">📷</span>
+    <span>{image ? "Change photo" : "Replace photo"}</span>
+  </label>
+
+  {/* Existing or New Preview */}
+  {(preview || currentImageUrl) && (
+    <div className="relative w-full h-56 rounded-xl overflow-hidden border border-[var(--muted)]/30">
+      <img
+        src={preview ?? currentImageUrl!}
+        alt="Preview"
+        className="object-cover w-full h-full"
+      />
+    </div>
+  )}
+</div>
+
 
           <button
             type="submit"

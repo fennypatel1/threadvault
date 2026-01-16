@@ -36,6 +36,10 @@ export default function ClothingCard({
         text-[var(--background)]
         rounded-2xl
         overflow-hidden
+        transition
+        hover:-translate-y-1
+        hover:shadow-lg
+        cursor-pointer
         shadow-sm
         hover:shadow-md
         transition-all
@@ -51,8 +55,8 @@ export default function ClothingCard({
             h-60
             object-cover
             transition-transform
-            duration-500
-            hover:scale-[1.02]
+    duration-300
+    hover:scale-105
           "
         />
       )}
