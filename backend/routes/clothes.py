@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from backend.db import get_connection
 from backend.models import ClothingItem
+from typing import Optional
 
 router = APIRouter()
 
@@ -14,7 +15,7 @@ os.makedirs(IMAGES_DIR, exist_ok=True)
 def add_clothing(
     name: str = Form(...),
     category: str = Form(...),
-    image: UploadFile | None = File(None),
+    image: Optional[UploadFile] = File(None),
 ):
     conn = get_connection()
     cursor = conn.cursor()
@@ -112,7 +113,7 @@ def update_clothing(
     item_id: str,
     name: str = Form(...),
     category: str = Form(...),
-    image: UploadFile | None = File(None),
+    image: Optional[UploadFile] = File(None),
 ):
     conn = get_connection()
     cursor = conn.cursor()
