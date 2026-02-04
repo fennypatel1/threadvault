@@ -60,10 +60,12 @@ ThreadVault v1 is considered successful if users:
 
 ## **Documentation**
 Detailed product documentation is available in the /docs directory, including:
-- Product Requirements Document (PRD)
-- User research summary
-- MVP scope and product tradeoffs
-- Product roadmap and future considerations
+-  **Product Case Study:** [Read the Product Case Study](docs/Product-Case-Study.md)
+- **Product Requirements Document (PRD):** [View PRD](docs/prd.md)
+- **User Research Summary:** [View User Research](docs/User-Research-Summary.md)
+- **Product Roadmap:** [View Product Roadmap](docs/Product-Roadmap.md)
+- **Decisions & Tradeoffs:** [View Decisions](docs/Decisions-Log.md)
+- **Risks & Mitigations:** [View Risks & Mitigations](docs/Risks-and-Mitigations.md)
 
 ## **Status**
 ThreadVault is currently in v1 (MVP).
