@@ -1,5 +1,7 @@
 import os
 import uuid
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from db import get_connection
 from models import ClothingItem
@@ -7,8 +9,11 @@ from typing import Optional
 
 router = APIRouter()
 
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "../images")
-os.makedirs(IMAGES_DIR, exist_ok=True)
+cloudinary.config(
+    cloud_name=os.environ["CLOUDINARY_CLOUD_NAME"],
+    api_key=os.environ["CLOUDINARY_API_KEY"],
+    api_secret=os.environ["CLOUDINARY_API_SECRET"],
+)
 
 
 @router.post("/clothes", response_model=ClothingItem)
@@ -21,91 +26,50 @@ def add_clothing(
     cursor = conn.cursor()
 
     item_id = str(uuid.uuid4())
+    image_url = None
     image_path = None
-    filename = None
 
     if image:
-        safe_name = image.filename.replace(" ", "_").lower()
-        filename = f"{item_id}_{safe_name}"
-        image_path = os.path.join("images", filename)
-
-        with open(image_path, "wb") as f:
-            f.write(image.file.read())
+        result = cloudinary.uploader.upload(image.file, public_id=f"threadvault/{item_id}")
+        image_url = result["secure_url"]
+        image_path = image_url  # store the URL as the "path"
 
     cursor.execute(
-        "INSERT INTO clothes (id, name, category, image_path) VALUES (?, ?, ?, ?)",
+        "INSERT INTO clothes (id, name, category, image_path) VALUES (%s, %s, %s, %s)",
         (item_id, name, category, image_path),
     )
     conn.commit()
     conn.close()
 
-    return ClothingItem(
-        id=item_id,
-        name=name,
-        category=category,
-        image_url=f"/images/{filename}" if filename else None,
-    )
+    return ClothingItem(id=item_id, name=name, category=category, image_url=image_url)
 
 
 @router.get("/clothes", response_model=list[ClothingItem])
 def get_clothes():
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT id, name, category, image_path FROM clothes"
-    )
+    cursor.execute("SELECT id, name, category, image_path FROM clothes")
     rows = cursor.fetchall()
     conn.close()
 
-    results = []
-    for row in rows:
-        image_path = row[3]
-        image_url = (
-            f"/images/{os.path.basename(image_path)}"
-            if image_path
-            else None
-        )
-
-        results.append(
-            ClothingItem(
-                id=row[0],
-                name=row[1],
-                category=row[2],
-                image_url=image_url,
-            )
-        )
-
-    return results
+    return [
+        ClothingItem(id=r[0], name=r[1], category=r[2], image_url=r[3])
+        for r in rows
+    ]
 
 
 @router.get("/clothes/{item_id}", response_model=ClothingItem)
 def get_clothing_by_id(item_id: str):
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT id, name, category, image_path FROM clothes WHERE id = ?",
-        (item_id,),
-    )
+    cursor.execute("SELECT id, name, category, image_path FROM clothes WHERE id = %s", (item_id,))
     row = cursor.fetchone()
     conn.close()
 
     if row is None:
         raise HTTPException(status_code=404, detail="Clothing item not found")
 
-    image_url = (
-        f"/images/{os.path.basename(row[3])}"
-        if row[3]
-        else None
-    )
-
-    return ClothingItem(
-        id=row[0],
-        name=row[1],
-        category=row[2],
-        image_url=image_url,
-    )
+    return ClothingItem(id=row[0], name=row[1], category=row[2], image_url=row[3])
 
 
 @router.put("/clothes/{item_id}", response_model=ClothingItem)
@@ -117,75 +81,45 @@ def update_clothing(
 ):
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT image_path FROM clothes WHERE id = ?",
-        (item_id,),
-    )
+    cursor.execute("SELECT image_path FROM clothes WHERE id = %s", (item_id,))
     row = cursor.fetchone()
 
     if row is None:
         conn.close()
         raise HTTPException(status_code=404, detail="Clothing item not found")
 
-    old_image_path = row[0]
-    new_image_path = old_image_path
-    filename = None
+    image_url = row[0]
 
     if image:
-        if old_image_path and os.path.exists(old_image_path):
-            os.remove(old_image_path)
-
-        safe_name = image.filename.replace(" ", "_").lower()
-        filename = f"{item_id}_{safe_name}"
-        new_image_path = os.path.join("images", filename)
-
-        with open(new_image_path, "wb") as f:
-            f.write(image.file.read())
+        # Overwrite the same public_id in Cloudinary
+        result = cloudinary.uploader.upload(image.file, public_id=f"threadvault/{item_id}", overwrite=True)
+        image_url = result["secure_url"]
 
     cursor.execute(
-        """
-        UPDATE clothes
-        SET name = ?, category = ?, image_path = ?
-        WHERE id = ?
-        """,
-        (name, category, new_image_path, item_id),
+        "UPDATE clothes SET name = %s, category = %s, image_path = %s WHERE id = %s",
+        (name, category, image_url, item_id),
     )
     conn.commit()
     conn.close()
 
-    return ClothingItem(
-        id=item_id,
-        name=name,
-        category=category,
-        image_url=f"/images/{filename}" if filename else None,
-    )
+    return ClothingItem(id=item_id, name=name, category=category, image_url=image_url)
 
 
 @router.delete("/clothes/{item_id}")
 def delete_clothing(item_id: str):
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT image_path FROM clothes WHERE id = ?",
-        (item_id,),
-    )
+    cursor.execute("SELECT image_path FROM clothes WHERE id = %s", (item_id,))
     row = cursor.fetchone()
 
     if row is None:
         conn.close()
         raise HTTPException(status_code=404, detail="Clothing item not found")
 
-    image_path = row[0]
+    # Delete from Cloudinary
+    cloudinary.uploader.destroy(f"threadvault/{item_id}")
 
-    if image_path and os.path.exists(image_path):
-        os.remove(image_path)
-
-    cursor.execute(
-        "DELETE FROM clothes WHERE id = ?",
-        (item_id,),
-    )
+    cursor.execute("DELETE FROM clothes WHERE id = %s", (item_id,))
     conn.commit()
     conn.close()
 

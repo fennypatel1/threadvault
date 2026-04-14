@@ -1,3 +1,5 @@
 fastapi
 uvicorn[standard]
 python-multipart
+cloudinary
+psycopg2-binary
