@@ -33,4 +33,8 @@ def root():
 def health_check():
     return {"status": "ok"}
 
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(rest_of_path: str):
+    return {"message": "OK"}
+
 app.include_router(clothes_router)
