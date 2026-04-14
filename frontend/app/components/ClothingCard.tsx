@@ -51,7 +51,7 @@ export default function ClothingCard({
     >
       {item.image_url && (
         <img
-          src={`${API_URL}${item.image_url}`}
+          src={item.image_url}
           alt={item.name}
           className="
             w-full
