@@ -16,7 +16,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+import os
 
+if not os.path.exists("images"):
+    os.makedirs("images")
 
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
