@@ -1,10 +1,9 @@
 "use client"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export default function UploadPage() {
   const router = useRouter()
@@ -16,36 +15,48 @@ export default function UploadPage() {
   const [success, setSuccess] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
 
-function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-  const file = e.target.files?.[0]
-  if (!file) return
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-  setImage(file)
-  setPreview(URL.createObjectURL(file))
-}
-
+    setImage(file)
+    setPreview(URL.createObjectURL(file))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (!image) return
+
     setLoading(true)
 
-    const formData = new FormData()
-    formData.append("name", name)
-    formData.append("category", category)
-    if (image) formData.append("image", image)
+    try {
+      const formData = new FormData()
+      formData.append("name", name)
+      formData.append("category", category)
+      formData.append("image", image)
 
-    await fetch(`${API_URL}/clothes`, {
-  method: "POST",
-  body: formData,
-})
+      const res = await fetch(`${API_URL}/clothes`, {
+        method: "POST",
+        body: formData,
+      })
 
-setSuccess(true) // 👈 ADD
+      if (!res.ok) {
+        throw new Error("Upload failed")
+      }
 
-setTimeout(() => {
-  router.push("/")
-  router.refresh()
-}, 800)
+      setSuccess(true)
 
+      setTimeout(() => {
+        router.push("/")
+        router.refresh()
+      }, 1000)
+
+    } catch (err) {
+      console.error(err)
+      alert("Upload failed. If it's your first try, the server may be waking up — try again.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -66,11 +77,12 @@ setTimeout(() => {
         <p className="text-sm text-[var(--muted)] mb-6">
           Upload a new piece to your closet
         </p>
+
         {success && (
-        <div className="mb-4 rounded-xl bg-[var(--accent)]/20 text-[var(--foreground)] px-4 py-3 text-sm">
-          Added to your closet ✨
-        </div>
-      )}
+          <div className="mb-4 rounded-xl bg-[var(--accent)]/20 text-[var(--foreground)] px-4 py-3 text-sm">
+            Added to your closet ✨
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Name */}
@@ -112,71 +124,66 @@ setTimeout(() => {
           </div>
 
           {/* Image */}
-<div className="space-y-3">
-  <label className="block text-sm text-[var(--muted)]">
-    Image
-  </label>
+          <div className="space-y-3">
+            <label className="block text-sm text-[var(--muted)]">
+              Image
+            </label>
 
-  {/* Hidden file input */}
-  <input
-    id="image-upload"
-    type="file"
-    accept="image/*"
-    onChange={handleImageChange}
-    className="hidden"
-  />
+            <input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
 
-  {/* Custom upload button */}
-  <label
-    htmlFor="image-upload"
-    className="
-      cursor-pointer
-      flex items-center justify-center gap-2
-      rounded-xl border border-dashed
-      border-[var(--muted)]/40
-      bg-[var(--foreground)]/5
-      px-4 py-6
-      text-sm font-medium
-      text-[var(--muted)]
-      hover:bg-[var(--foreground)]/10
-      transition
-    "
-  >
-    <span className="text-lg">📷</span>
-    <span>{image ? "Change photo" : "Upload clothing photo"}</span>
-  </label>
+            <label
+              htmlFor="image-upload"
+              className="
+                cursor-pointer
+                flex items-center justify-center gap-2
+                rounded-xl border border-dashed
+                border-[var(--muted)]/40
+                bg-[var(--foreground)]/5
+                px-4 py-6
+                text-sm font-medium
+                text-[var(--muted)]
+                hover:bg-[var(--foreground)]/10
+                transition
+              "
+            >
+              <span className="text-lg">📷</span>
+              <span>{image ? "Change photo" : "Upload clothing photo"}</span>
+            </label>
 
-  {/* Preview */}
-  {preview && (
-    <div className="relative w-full h-56 rounded-xl overflow-hidden border border-[var(--muted)]/30">
-      <img
-        src={preview}
-        alt="Preview"
-        className="object-cover w-full h-full"
-      />
-    </div>
-  )}
-</div>
-
+            {preview && (
+              <div className="relative w-full h-56 rounded-xl overflow-hidden border border-[var(--muted)]/30">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="object-cover w-full h-full"
+                />
+              </div>
+            )}
+          </div>
 
           {/* Submit */}
           <button
-  type="submit"
-  disabled={loading}
-  className="
-    w-full mt-4 py-3 rounded-xl
-    bg-[var(--accent)]
-    text-[var(--foreground)]
-    font-medium
-    transition
-    hover:opacity-90
-    disabled:opacity-60
-    disabled:cursor-not-allowed
-  "
->
-  {loading ? "Uploading…" : "Upload"}
-</button>
-
+            type="submit"
+            disabled={loading}
+            className="
+              w-full mt-4 py-3 rounded-xl
+              bg-[var(--accent)]
+              text-[var(--foreground)]
+              font-medium
+              transition
+              hover:opacity-90
+              disabled:opacity-60
+              disabled:cursor-not-allowed
+            "
+          >
+            {loading ? "Uploading... (may take ~30s first time)" : "Upload"}
+          </button>
         </form>
       </div>
     </main>
