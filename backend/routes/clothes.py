@@ -34,9 +34,11 @@ def add_clothing(
         image_url = result["secure_url"]
         image_path = image_url  # store the URL as the "path"
 
+    user_id = "demo-user"
+
     cursor.execute(
-        "INSERT INTO clothes (id, name, category, image_path) VALUES (%s, %s, %s, %s)",
-        (item_id, name, category, image_path),
+        "INSERT INTO clothes (id, name, category, image_path, user_id) VALUES (%s, %s, %s, %s, %s)",
+        (item_id, name, category, image_path, user_id),
     )
     conn.commit()
     conn.close()
@@ -48,7 +50,12 @@ def add_clothing(
 def get_clothes():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, category, image_path FROM clothes")
+    user_id = "demo-user"
+
+    cursor.execute(
+        "SELECT id, name, category, image_path FROM clothes WHERE user_id = %s",
+        (user_id,)
+)
     rows = cursor.fetchall()
     conn.close()
 
@@ -81,7 +88,12 @@ def update_clothing(
 ):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT image_path FROM clothes WHERE id = %s", (item_id,))
+    user_id = "demo-user"
+
+    cursor.execute(
+        "SELECT image_path FROM clothes WHERE id = %s AND user_id = %s",
+        (item_id, user_id),
+)
     row = cursor.fetchone()
 
     if row is None:
@@ -109,7 +121,12 @@ def update_clothing(
 def delete_clothing(item_id: str):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT image_path FROM clothes WHERE id = %s", (item_id,))
+    user_id = "demo-user"
+
+    cursor.execute(
+        "SELECT image_path FROM clothes WHERE id = %s AND user_id = %s",
+        (item_id, user_id),
+)
     row = cursor.fetchone()
 
     if row is None:
