@@ -1,5 +1,8 @@
 "use client"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 type ClothingItem = {
   id: string
   name: string
@@ -21,7 +24,7 @@ export default function ClothingCard({
 
     if (!confirmed) return
 
-    await fetch(`http://127.0.0.1:8000/clothes/${item.id}`, {
+    await fetch(`${API_URL}/clothes/${item.id}`, {
       method: "DELETE",
     })
 
@@ -48,7 +51,7 @@ export default function ClothingCard({
     >
       {item.image_url && (
         <img
-          src={`http://127.0.0.1:8000${item.image_url}`}
+          src={`${API_URL}${item.image_url}`}
           alt={item.name}
           className="
             w-full

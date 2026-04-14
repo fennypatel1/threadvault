@@ -1,5 +1,8 @@
 "use client"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 import { useEffect, useState } from "react"
 import ClothingCard from "./components/ClothingCard"
 
@@ -35,9 +38,11 @@ const [newCategory, setNewCategory] = useState("")
 
   async function fetchClothes() {
   try {
-    const res = await fetch("http://127.0.0.1:8000/clothes", {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+    const res = await fetch(`${API_URL}/clothes`, {
       cache: "no-store",
-    })
+    });
 
     if (!res.ok) {
       throw new Error("Failed to fetch clothes")

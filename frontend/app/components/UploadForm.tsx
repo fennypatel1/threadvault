@@ -1,5 +1,8 @@
 "use client"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -23,7 +26,7 @@ export default function UploadForm() {
       formData.append("image", image)
     }
 
-    await fetch("http://127.0.0.1:8000/clothes", {
+    await fetch(`${API_URL}/clothes`, {
       method: "POST",
       body: formData,
     })

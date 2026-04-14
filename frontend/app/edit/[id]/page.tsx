@@ -1,5 +1,8 @@
 "use client"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 
@@ -18,9 +21,7 @@ export default function EditPage() {
 
   useEffect(() => {
   async function fetchItem() {
-    const res = await fetch(
-      `http://127.0.0.1:8000/clothes/${id}`
-    )
+    const res = await fetch(`${API_URL}/clothes/${id}`)
     const data = await res.json()
 
     setName(data.name)
@@ -51,9 +52,7 @@ export default function EditPage() {
     formData.append("category", category)
     if (image) formData.append("image", image)
 
-    await fetch(
-      `http://127.0.0.1:8000/clothes/${id}`,
-      {
+    await fetch(`${API_URL}/clothes/${id}`, {
         method: "PUT",
         body: formData,
       }
@@ -162,7 +161,7 @@ export default function EditPage() {
   {(preview || currentImageUrl) && (
     <div className="relative w-full h-56 rounded-xl overflow-hidden border border-[var(--muted)]/30">
       <img
-        src={preview ?? currentImageUrl!}
+        src={preview ?? `${API_URL}${currentImageUrl}`}
         alt="Preview"
         className="object-cover w-full h-full"
       />

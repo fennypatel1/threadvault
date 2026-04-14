@@ -1,5 +1,8 @@
 "use client"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -31,7 +34,7 @@ function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     formData.append("category", category)
     if (image) formData.append("image", image)
 
-    await fetch("http://127.0.0.1:8000/clothes", {
+    await fetch(`${API_URL}/clothes`, {
   method: "POST",
   body: formData,
 })

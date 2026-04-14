@@ -1,8 +1,8 @@
 import os
 import uuid
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from backend.db import get_connection
-from backend.models import ClothingItem
+from db import get_connection
+from models import ClothingItem
 from typing import Optional
 
 router = APIRouter()
@@ -27,7 +27,7 @@ def add_clothing(
     if image:
         safe_name = image.filename.replace(" ", "_").lower()
         filename = f"{item_id}_{safe_name}"
-        image_path = os.path.join("backend/images", filename)
+        image_path = os.path.join("images", filename)
 
         with open(image_path, "wb") as f:
             f.write(image.file.read())
@@ -138,7 +138,7 @@ def update_clothing(
 
         safe_name = image.filename.replace(" ", "_").lower()
         filename = f"{item_id}_{safe_name}"
-        new_image_path = os.path.join("backend/images", filename)
+        new_image_path = os.path.join("images", filename)
 
         with open(new_image_path, "wb") as f:
             f.write(image.file.read())
