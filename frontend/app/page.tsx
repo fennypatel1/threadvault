@@ -1,5 +1,8 @@
 "use client"
 
+
+import { supabase } from "@/lib/supabase"
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
@@ -40,9 +43,13 @@ const [newCategory, setNewCategory] = useState("")
   try {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    const res = await fetch(`${API_URL}/clothes`, {
-      cache: "no-store",
-    });
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return
+    
+    const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
+  cache: "no-store",
+});
 
     if (!res.ok) {
       throw new Error("Failed to fetch clothes")

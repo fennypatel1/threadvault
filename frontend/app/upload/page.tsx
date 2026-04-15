@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/lib/supabase"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -31,9 +32,22 @@ export default function UploadPage() {
 
     try {
       const formData = new FormData()
+
       formData.append("name", name)
       formData.append("category", category)
-      formData.append("image", image)
+
+      // ✅ ADD THIS
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        alert("You must be logged in")
+        return
+      }
+
+      formData.append("user_id", user.id)
+
+      // keep this
+      if (image) formData.append("image", image)
 
       const res = await fetch(`${API_URL}/clothes`, {
         method: "POST",

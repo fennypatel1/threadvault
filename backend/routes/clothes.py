@@ -20,8 +20,10 @@ cloudinary.config(
 def add_clothing(
     name: str = Form(...),
     category: str = Form(...),
+    user_id: str = Form(...),
     image: Optional[UploadFile] = File(None),
 ):
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -34,7 +36,7 @@ def add_clothing(
         image_url = result["secure_url"]
         image_path = image_url  # store the URL as the "path"
 
-    user_id = "demo-user"
+    #user_id = "demo-user"
 
     cursor.execute(
         "INSERT INTO clothes (id, name, category, image_path, user_id) VALUES (%s, %s, %s, %s, %s)",
@@ -50,7 +52,7 @@ def add_clothing(
 def get_clothes():
     conn = get_connection()
     cursor = conn.cursor()
-    user_id = "demo-user"
+    #user_id = "demo-user"
 
     cursor.execute(
         "SELECT id, name, category, image_path FROM clothes WHERE user_id = %s",
@@ -88,7 +90,7 @@ def update_clothing(
 ):
     conn = get_connection()
     cursor = conn.cursor()
-    user_id = "demo-user"
+    #user_id = "demo-user"
 
     cursor.execute(
         "SELECT image_path FROM clothes WHERE id = %s AND user_id = %s",
@@ -121,7 +123,7 @@ def update_clothing(
 def delete_clothing(item_id: str):
     conn = get_connection()
     cursor = conn.cursor()
-    user_id = "demo-user"
+    #user_id = "demo-user"
 
     cursor.execute(
         "SELECT image_path FROM clothes WHERE id = %s AND user_id = %s",
