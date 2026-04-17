@@ -47,17 +47,16 @@ def add_clothing(
 
     return ClothingItem(id=item_id, name=name, category=category, image_url=image_url)
 
-
 @router.get("/clothes", response_model=list[ClothingItem])
-def get_clothes():
+def get_clothes(user_id: str):
     conn = get_connection()
     cursor = conn.cursor()
-    #user_id = "demo-user"
 
     cursor.execute(
         "SELECT id, name, category, image_path FROM clothes WHERE user_id = %s",
         (user_id,)
-)
+    )
+
     rows = cursor.fetchall()
     conn.close()
 
@@ -81,11 +80,11 @@ def get_clothing_by_id(item_id: str):
     return ClothingItem(id=row[0], name=row[1], category=row[2], image_url=row[3])
 
 
-@router.put("/clothes/{item_id}", response_model=ClothingItem)
 def update_clothing(
     item_id: str,
     name: str = Form(...),
     category: str = Form(...),
+    user_id: str = Form(...),  
     image: Optional[UploadFile] = File(None),
 ):
     conn = get_connection()
@@ -120,7 +119,7 @@ def update_clothing(
 
 
 @router.delete("/clothes/{item_id}")
-def delete_clothing(item_id: str):
+def delete_clothing(item_id: str, user_id: str):
     conn = get_connection()
     cursor = conn.cursor()
     #user_id = "demo-user"
