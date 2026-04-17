@@ -13,7 +13,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  // ✅ Auto redirect if already logged in
   useEffect(() => {
     async function checkUser() {
       const { data } = await supabase.auth.getUser()
@@ -35,22 +34,34 @@ export default function LoginPage() {
         password,
       })
 
-      if (error) {
-        setMessage(error.message)
-      } else {
-        setMessage("Check your email to confirm your account!")
-      }
+      if (error) setMessage(error.message)
+      else setMessage("Check your email to confirm your account!")
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) {
-        setMessage(error.message)
-      } else {
-        router.push("/")
-      }
+      if (error) setMessage(error.message)
+      else router.push("/")
+    }
+
+    setLoading(false)
+  }
+
+  // 🔥 DEMO LOGIN
+  async function handleDemoLogin() {
+    setLoading(true)
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: "demo@threadvault.com",
+      password: "demopassword123",
+    })
+
+    if (error) {
+      setMessage("Demo login failed")
+    } else {
+      router.push("/")
     }
 
     setLoading(false)
@@ -77,66 +88,58 @@ export default function LoginPage() {
             : "Login to access your wardrobe"}
         </p>
 
-        {/* ✅ Success / Error message */}
+        {/* Message */}
         {message && (
-          <div className="mb-4 rounded-xl bg-[var(--accent)]/20 text-[var(--foreground)] px-4 py-3 text-sm">
+          <div className="mb-4 rounded-xl bg-[var(--accent)]/20 px-4 py-3 text-sm">
             {message}
           </div>
         )}
 
+        {/* 🔥 DEMO BUTTON */}
+        <button
+          onClick={handleDemoLogin}
+          className="
+            w-full mb-4 py-3 rounded-xl
+            bg-[var(--accent)]
+            text-[var(--foreground)]
+            font-medium
+            hover:opacity-90
+            transition
+          "
+        >
+          Try Demo →
+        </button>
+
+        <div className="text-center text-xs text-[var(--muted)] mb-4">
+          or sign in with your account
+        </div>
+
         <form onSubmit={handleAuth} className="space-y-5">
           {/* Email */}
-          <div>
-            <label className="block text-sm mb-1 text-[var(--muted)]">
-              Email
-            </label>
-            <input
-              className="
-                w-full rounded-xl px-4 py-3
-                bg-transparent
-                border border-[var(--muted)]/30
-                focus:outline-none
-                focus:ring-2 focus:ring-[var(--accent)]
-              "
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            className="w-full rounded-xl px-4 py-3 border border-[var(--muted)]/30"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
           {/* Password */}
-          <div>
-            <label className="block text-sm mb-1 text-[var(--muted)]">
-              Password
-            </label>
-            <input
-              type="password"
-              className="
-                w-full rounded-xl px-4 py-3
-                bg-transparent
-                border border-[var(--muted)]/30
-                focus:outline-none
-                focus:ring-2 focus:ring-[var(--accent)]
-              "
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            type="password"
+            className="w-full rounded-xl px-4 py-3 border border-[var(--muted)]/30"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          {/* Button */}
+          {/* Submit */}
           <button
             disabled={loading}
             className="
-              w-full mt-2 py-3 rounded-xl
-              bg-[var(--accent)]
-              text-[var(--foreground)]
-              font-medium
+              w-full py-3 rounded-xl
+              bg-black text-white
               hover:opacity-90
               transition
-              disabled:opacity-60
             "
           >
             {loading
@@ -149,12 +152,7 @@ export default function LoginPage() {
 
         {/* Toggle */}
         <p
-          className="
-            mt-6 text-sm text-center
-            text-[var(--muted)]
-            cursor-pointer
-            hover:underline
-          "
+          className="mt-6 text-sm text-center cursor-pointer hover:underline"
           onClick={() => setIsSignup(!isSignup)}
         >
           {isSignup
