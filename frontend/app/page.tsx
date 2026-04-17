@@ -31,11 +31,8 @@ export default function Home() {
   const [customCategories, setCustomCategories] = useState<string[]>([])
   const [showCategoryInput, setShowCategoryInput] = useState(false)
   const [newCategory, setNewCategory] = useState("")
-
-  // ✅ ADDED: user state
   const [user, setUser] = useState<any>(null)
 
-  // ✅ ADDED: get logged in user
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser()
@@ -57,9 +54,7 @@ export default function Home() {
         cache: "no-store",
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch clothes")
-      }
+      if (!res.ok) throw new Error("Failed to fetch clothes")
 
       const data = await res.json()
       setClothes(data)
@@ -80,11 +75,7 @@ export default function Home() {
 
   function handleAddCategory() {
     if (!newCategory.trim()) return
-
-    setCustomCategories((prev) => [
-      ...prev,
-      newCategory.toLowerCase(),
-    ])
+    setCustomCategories((prev) => [...prev, newCategory.toLowerCase()])
     setNewCategory("")
     setShowCategoryInput(false)
   }
@@ -109,14 +100,12 @@ export default function Home() {
       item.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
-  if (loading) {
-    return <p className="p-6">Loading...</p>
-  }
+  if (loading) return <p className="p-6">Loading...</p>
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12">
 
-      {/* ✅ ADDED: Login / Logout */}
+      {/* Top Right Auth */}
       <div className="flex justify-end mb-4">
         {user ? (
           <button
@@ -129,130 +118,70 @@ export default function Home() {
             Logout
           </button>
         ) : (
-          <a
-            href="/login"
-            className="text-sm px-4 py-2 bg-black text-white rounded"
-          >
-            Login
-          </a>
+          <div className="flex gap-3">
+            <a
+              href="/login"
+              className="text-sm px-4 py-2 bg-black text-white rounded"
+            >
+              Sign In
+            </a>
+
+            <button
+              onClick={async () => {
+                // TEMP demo (we improve next)
+                alert("Demo mode coming next step")
+              }}
+              className="text-sm px-4 py-2 rounded border border-[var(--muted)]/40"
+            >
+              Try Demo
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-medium tracking-tight mb-1">
+      {/* ✅ LANDING PAGE (when NOT logged in) */}
+      {!user ? (
+        <div className="text-center py-32">
+          <h1 className="text-5xl font-semibold mb-3">
             ThreadVault
           </h1>
-          <p className="text-[var(--muted)]">
-            Your digital wardrobe
+          <p className="text-[var(--muted)] mb-8">
+            Your digital wardrobe — organize, preview, and plan outfits effortlessly.
           </p>
-        </div>
 
-        <a
-          href="/upload"
-          className="
-            px-5 py-3 rounded-xl text-sm font-medium
-            bg-[var(--accent)]
-            text-[var(--foreground)]
-            hover:opacity-90
-            transition
-          "
-        >
-          Upload
-        </a>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-        <div className="flex flex-wrap gap-3 items-center">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`
-                px-4 py-2 rounded-full text-sm capitalize transition
-                ${
-                  selectedCategory === category
-                    ? "bg-[var(--accent)] text-[var(--foreground)]"
-                    : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-80"
-                }
-              `}
-            >
-              {category} · {countByCategory(clothes, category)}
-            </button>
-          ))}
-
-          {!showCategoryInput && (
-            <button
-              onClick={() => setShowCategoryInput(true)}
+          <div className="flex justify-center gap-4">
+            <a
+              href="/login"
               className="
-                px-4 py-2 rounded-full text-sm
-                border border-dashed
-                border-[var(--muted)]/40
+                px-6 py-3 rounded-xl
+                bg-[var(--accent)]
+                text-[var(--foreground)]
+                font-medium
+                hover:opacity-90
+                transition
+              "
+            >
+              Get Started
+            </a>
+
+            <button
+              onClick={() => alert("Demo mode next step")}
+              className="
+                px-6 py-3 rounded-xl
+                border border-[var(--muted)]/40
                 text-[var(--muted)]
                 hover:bg-[var(--foreground)]/10
                 transition
               "
             >
-              + Add
+              Try Demo
             </button>
-          )}
-        </div>
+          </div>
 
-        <input
-          type="text"
-          placeholder="Search…"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="
-            w-full sm:w-64
-            px-4 py-2 rounded-xl
-            bg-[var(--foreground)]
-            text-[var(--background)]
-            border border-[var(--muted)]/30
-            focus:outline-none
-            focus:ring-2 focus:ring-[var(--accent)]
-          "
-        />
-      </div>
-
-      {showCategoryInput && (
-        <div className="flex gap-2 mb-10">
-          <input
-            type="text"
-            placeholder="New category"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="
-              px-3 py-2 rounded-lg text-sm
-              bg-[var(--foreground)]
-              text-[var(--background)]
-              border border-[var(--muted)]/30
-            "
-          />
-          <button
-            onClick={handleAddCategory}
-            disabled={!newCategory.trim()}
-            className="
-              px-4 py-2 rounded-lg text-sm
-              bg-[var(--accent)]
-              text-[var(--foreground)]
-              disabled:opacity-50
-            "
-          >
-            Add
-          </button>
-        </div>
-      )}
-
-      {/* ✅ ADDED: not logged in state */}
-      {!user ? (
-        <div className="text-center py-20">
-          <p className="text-lg mb-4">Please login to view your closet</p>
-          <a href="/login" className="text-blue-500 underline">
-            Go to Login
-          </a>
+          {/* Preview Hint */}
+          <p className="text-xs text-[var(--muted)] mt-10">
+            No signup required for demo preview
+          </p>
         </div>
       ) : filteredClothes.length === 0 ? (
         <div className="py-24 text-center">
@@ -270,15 +199,93 @@ export default function Home() {
           </a>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
-          {filteredClothes.map((item) => (
-            <ClothingCard
-              key={item.id}
-              item={item}
-              onDelete={handleDelete}
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-medium tracking-tight mb-1">
+                ThreadVault
+              </h1>
+              <p className="text-[var(--muted)]">
+                Your digital wardrobe
+              </p>
+            </div>
+
+            <a
+              href="/upload"
+              className="
+                px-5 py-3 rounded-xl text-sm font-medium
+                bg-[var(--accent)]
+                text-[var(--foreground)]
+                hover:opacity-90
+                transition
+              "
+            >
+              Upload
+            </a>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+            <div className="flex flex-wrap gap-3 items-center">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`
+                    px-4 py-2 rounded-full text-sm capitalize transition
+                    ${
+                      selectedCategory === category
+                        ? "bg-[var(--accent)] text-[var(--foreground)]"
+                        : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-80"
+                    }
+                  `}
+                >
+                  {category} · {countByCategory(clothes, category)}
+                </button>
+              ))}
+
+              {!showCategoryInput && (
+                <button
+                  onClick={() => setShowCategoryInput(true)}
+                  className="
+                    px-4 py-2 rounded-full text-sm
+                    border border-dashed
+                    border-[var(--muted)]/40
+                    text-[var(--muted)]
+                  "
+                >
+                  + Add
+                </button>
+              )}
+            </div>
+
+            <input
+              type="text"
+              placeholder="Search…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="
+                w-full sm:w-64
+                px-4 py-2 rounded-xl
+                bg-[var(--foreground)]
+                text-[var(--background)]
+                border border-[var(--muted)]/30
+              "
             />
-          ))}
-        </div>
+          </div>
+
+          {/* Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
+            {filteredClothes.map((item) => (
+              <ClothingCard
+                key={item.id}
+                item={item}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </>
       )}
     </main>
   )
