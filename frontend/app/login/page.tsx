@@ -57,24 +57,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6 relative">
-
-      {/* ✅ Back button */}
-      <a
-        href="/"
-        className="
-          absolute top-6 left-6
-          text-sm px-4 py-2 rounded-full
-          bg-[var(--foreground)]
-          text-[var(--background)]
-          border border-[var(--muted)]/30
-          hover:opacity-80
-          transition
-        "
-      >
-        ← Back
-      </a>
-
+    <main className="min-h-screen flex items-center justify-center px-6">
       <div
         className="
           w-full max-w-md
