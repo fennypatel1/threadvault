@@ -1,7 +1,9 @@
 "use client"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { useState, useRef, useEffect } from "react"
+import { MoreHorizontal } from "lucide-react"
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type ClothingItem = {
   id: string
@@ -13,15 +15,30 @@ type ClothingItem = {
 export default function ClothingCard({
   item,
   onDelete,
+  isDemo,
 }: {
   item: ClothingItem
   onDelete: (id: string) => void
+  isDemo?: boolean
 }) {
-  async function handleDelete() {
-    const confirmed = confirm(
-      `Delete "${item.name}"? This cannot be undone.`
-    )
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  async function handleDeleteClick() {
+    if (isDemo) return
+
+    const confirmed = confirm(`Delete "${item.name}"?`)
     if (!confirmed) return
 
     await fetch(`${API_URL}/clothes/${item.id}`, {
@@ -32,74 +49,47 @@ export default function ClothingCard({
   }
 
   return (
-    <div
-      className="
-        relative
-        bg-[var(--foreground)]
-        text-[var(--background)]
-        rounded-2xl
-        overflow-hidden
-        transition
-        hover:-translate-y-1
-        hover:shadow-lg
-        cursor-pointer
-        shadow-sm
-        hover:shadow-md
-        transition-all
-        duration-300
-      "
-    >
+    <div className="relative bg-[var(--foreground)] text-[var(--background)] rounded-2xl overflow-hidden hover:shadow-lg transition">
+
+      {/* ⋯ MENU */}
+      {!isDemo && (
+        <div ref={menuRef} className="absolute top-3 right-3 z-10">
+          <button
+            onClick={() => setOpen(!open)}
+            className="p-1 rounded-full bg-white/80 backdrop-blur"
+          >
+            <MoreHorizontal size={18} />
+          </button>
+
+          {open && (
+            <div className="absolute right-0 mt-2 w-28 bg-white rounded-xl shadow border text-sm">
+              <a
+                href={`/edit/${item.id}`}
+                className="block px-3 py-2 hover:bg-gray-100"
+              >
+                Edit
+              </a>
+              <button
+                onClick={handleDeleteClick}
+                className="block w-full text-left px-3 py-2 hover:bg-gray-100 text-red-500"
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {item.image_url && (
         <img
           src={item.image_url}
           alt={item.name}
-          className="
-            w-full
-            h-60
-            object-cover
-            transition-transform
-    duration-300
-    hover:scale-105
-          "
+          className="w-full h-60 object-cover"
         />
       )}
 
-      {/* Edit button */}
-      <a
-        href={`/edit/${item.id}`}
-        className="
-          absolute top-3 left-3
-          text-xs px-3 py-1 rounded-full
-          bg-[var(--foreground)]/80
-          text-[var(--background)]
-          backdrop-blur
-          hover:bg-[var(--foreground)]
-          transition
-        "
-      >
-        Edit
-      </a>
-
-      {/* Delete button */}
-      <button
-        onClick={handleDelete}
-        className="
-          absolute top-3 right-3
-          text-xs px-3 py-1 rounded-full
-          bg-[var(--background)]/70
-          text-[var(--foreground)]
-          backdrop-blur
-          hover:bg-[var(--background)]
-          transition
-        "
-      >
-        Delete
-      </button>
-
       <div className="p-4">
-        <h3 className="font-medium text-lg leading-tight">
-          {item.name}
-        </h3>
+        <h3 className="font-medium text-lg">{item.name}</h3>
         <p className="text-sm text-[var(--muted)] capitalize">
           {item.category}
         </p>
