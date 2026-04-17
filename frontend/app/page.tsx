@@ -50,12 +50,7 @@ export default function Home() {
       setUser(user)
 
       if (!user) {
-        // ✅ DEMO MODE
-        const mappedDemo = demoItems.map((item) => ({
-          ...item,
-          image_url: item.image, // match your schema
-        }))
-        setClothes(mappedDemo)
+        setClothes(demoItems)
         setLoading(false)
         return
       }
