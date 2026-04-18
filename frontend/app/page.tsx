@@ -55,39 +55,64 @@ export default function Home() {
   useEffect(() => {
   let mounted = true
 
-  async function loadInitial() {
+  async function loadData() {
     setLoading(true)
 
     const { data } = await supabase.auth.getSession()
-    const currentUser = data.session?.user ?? null
+    const sessionUser = data.session?.user ?? null
 
     if (!mounted) return
 
-    setUser(currentUser)
+    setUser(sessionUser)
 
-    if (!currentUser) {
-      setClothes(demoItems)
+    if (!sessionUser) {
+      // 🔥 DEMO MODE — HARD RESET
+      setClothes([...demoItems])
       setLoading(false)
       return
     }
 
-    fetchUserClothes(currentUser.id)
+    try {
+      const res = await fetch(`${API_URL}/clothes?user_id=${sessionUser.id}`, {
+        cache: "no-store",
+      })
+
+      if (!res.ok) throw new Error("Failed")
+
+      const realData = await res.json()
+
+      if (!mounted) return
+
+      // 🔥 CRITICAL: overwrite, NOT merge
+      setClothes(realData)
+    } catch (err) {
+      console.error(err)
+    }
+
+    setLoading(false)
   }
 
-  loadInitial()
+  loadData()
 
-  // 🔥 LISTEN FOR LOGIN/LOGOUT CHANGES
   const { data: listener } = supabase.auth.onAuthStateChange(
     async (_event, session) => {
       const currentUser = session?.user ?? null
+
       setUser(currentUser)
 
       if (!currentUser) {
-        setClothes(demoItems)
+        // 🔥 HARD RESET AGAIN
+        setClothes([...demoItems])
         return
       }
 
-      fetchUserClothes(currentUser.id)
+      try {
+        const res = await fetch(`${API_URL}/clothes?user_id=${currentUser.id}`)
+        const realData = await res.json()
+        setClothes(realData)
+      } catch (err) {
+        console.error(err)
+      }
     }
   )
 
@@ -174,14 +199,16 @@ export default function Home() {
 
             {/* 🔥 FIXED DEMO BUTTON */}
             <button
-              onClick={async () => {
-                await supabase.auth.signOut()
-                setUser(null)
-                setClothes(demoItems)
-              }}
-            >
-              Try Demo
-            </button>
+            onClick={async () => {
+              await supabase.auth.signOut()
+
+              // 🔥 FORCE RESET IMMEDIATELY
+              setUser(null)
+              setClothes([...demoItems])
+            }}
+          >
+            Try Demo
+          </button>
           </div>
         )}
       </div>
