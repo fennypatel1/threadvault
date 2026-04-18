@@ -34,41 +34,68 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("")
   const [user, setUser] = useState<any>(null)
 
-  // 🔥 SINGLE SOURCE OF TRUTH
+
+  async function fetchUserClothes(userId: string) {
+  try {
+    const res = await fetch(`${API_URL}/clothes?user_id=${userId}`, {
+      cache: "no-store",
+    })
+
+    if (!res.ok) throw new Error("Failed")
+
+    const data = await res.json()
+    setClothes(data)
+  } catch (err) {
+    console.error(err)
+  } finally {
+    setLoading(false)
+  }
+}
+
   useEffect(() => {
-    async function loadData() {
-      setLoading(true)
+  let mounted = true
 
-      const { data } = await supabase.auth.getUser()
-      const currentUser = data.user
+  async function loadInitial() {
+    setLoading(true)
 
+    const { data } = await supabase.auth.getSession()
+    const currentUser = data.session?.user ?? null
+
+    if (!mounted) return
+
+    setUser(currentUser)
+
+    if (!currentUser) {
+      setClothes(demoItems)
+      setLoading(false)
+      return
+    }
+
+    fetchUserClothes(currentUser.id)
+  }
+
+  loadInitial()
+
+  // 🔥 LISTEN FOR LOGIN/LOGOUT CHANGES
+  const { data: listener } = supabase.auth.onAuthStateChange(
+    async (_event, session) => {
+      const currentUser = session?.user ?? null
       setUser(currentUser)
 
       if (!currentUser) {
-        // ✅ DEMO MODE
         setClothes(demoItems)
-        setLoading(false)
         return
       }
 
-      try {
-        const res = await fetch(`${API_URL}/clothes?user_id=${currentUser.id}`, {
-          cache: "no-store",
-        })
-
-        if (!res.ok) throw new Error("Failed to fetch clothes")
-
-        const data = await res.json()
-        setClothes(data)
-      } catch (err) {
-        console.error("Fetch clothes error:", err)
-      }
-
-      setLoading(false)
+      fetchUserClothes(currentUser.id)
     }
+  )
 
-    loadData()
-  }, [])
+  return () => {
+    mounted = false
+    listener.subscription.unsubscribe()
+  }
+}, [])
 
   const isDemo = !user
 
@@ -131,7 +158,6 @@ export default function Home() {
           <button
             onClick={async () => {
               await supabase.auth.signOut()
-              window.location.reload()
             }}
             className="text-sm px-4 py-2 bg-black text-white rounded"
           >
@@ -148,10 +174,11 @@ export default function Home() {
 
             {/* 🔥 FIXED DEMO BUTTON */}
             <button
-              onClick={() => {
-                window.location.reload()
+              onClick={async () => {
+                await supabase.auth.signOut()
+                setUser(null)
+                setClothes(demoItems)
               }}
-              className="text-sm px-4 py-2 rounded border border-gray-300"
             >
               Try Demo
             </button>
