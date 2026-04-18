@@ -34,14 +34,6 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("")
   const [user, setUser] = useState<any>(null)
 
-  useEffect(() => {
-    async function getUser() {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-    }
-    getUser()
-  }, [])
-
   // 🔥 UPDATED FETCH
   async function fetchClothes() {
     try {
@@ -51,11 +43,7 @@ export default function Home() {
 
       if (!user) {
         // ✅ DEMO MODE
-        const mappedDemo = demoItems.map((item) => ({
-          ...item,
-          image_url: item.image, // match your schema
-        }))
-        setClothes(mappedDemo)
+        setClothes(demoItems)
         setLoading(false)
         return
       }
