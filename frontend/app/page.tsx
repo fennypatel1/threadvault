@@ -14,7 +14,10 @@ type ClothingItem = {
   image_url?: string | null
 }
 
-function countByCategory(clothes: ClothingItem[], category: string) {
+function countByCategory(
+  clothes: ClothingItem[],
+  category: string
+) {
   if (category === "all") return clothes.length
   return clothes.filter(
     (item) => item.category.toLowerCase() === category
@@ -26,37 +29,39 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
+  const [customCategories, setCustomCategories] = useState<string[]>([])
+  const [showCategoryInput, setShowCategoryInput] = useState(false)
+  const [newCategory, setNewCategory] = useState("")
   const [user, setUser] = useState<any>(null)
 
-  // 🔥 SINGLE SOURCE OF TRUTH
-  useEffect(() => {
-    async function fetchClothes() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
+  async function fetchClothes() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
 
-        if (!user) {
-          // ✅ DEMO MODE (NO MAPPING NEEDED)
-          setClothes(demoItems)
-          setLoading(false)
-          return
-        }
-
-        const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
-          cache: "no-store",
-        })
-
-        if (!res.ok) throw new Error("Failed to fetch clothes")
-
-        const data = await res.json()
-        setClothes(data)
-      } catch (err) {
-        console.error("Fetch clothes error:", err)
-      } finally {
+      if (!user) {
+        // ✅ DEMO MODE
+        setClothes(demoItems)
         setLoading(false)
+        return
       }
-    }
 
+      const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
+        cache: "no-store",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch clothes")
+
+      const data = await res.json()
+      setClothes(data)
+    } catch (err) {
+      console.error("Fetch clothes error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchClothes()
   }, [])
 
@@ -67,10 +72,20 @@ export default function Home() {
     setClothes((prev) => prev.filter((item) => item.id !== id))
   }
 
+  function handleAddCategory() {
+    if (!newCategory.trim()) return
+    setCustomCategories((prev) => [...prev, newCategory.toLowerCase()])
+    setNewCategory("")
+    setShowCategoryInput(false)
+  }
+
   const categories = [
     "all",
     ...Array.from(
-      new Set(clothes.map((item) => item.category.toLowerCase()))
+      new Set([
+        ...clothes.map((item) => item.category.toLowerCase()),
+        ...customCategories.map((c) => c.toLowerCase()),
+      ])
     ),
   ]
 
@@ -124,7 +139,9 @@ export default function Home() {
       {/* EMPTY STATE */}
       {user && filteredClothes.length === 0 ? (
         <div className="py-24 text-center">
-          <p className="text-lg font-medium mb-2">Your closet is empty</p>
+          <p className="text-lg font-medium mb-2">
+            Your closet is empty
+          </p>
           <p className="text-[var(--muted)] mb-4">
             Add your first piece to start building your wardrobe.
           </p>
@@ -151,7 +168,13 @@ export default function Home() {
             {user && (
               <a
                 href="/upload"
-                className="px-5 py-3 rounded-xl text-sm font-medium bg-[var(--accent)] text-[var(--foreground)] hover:opacity-90 transition"
+                className="
+                  px-5 py-3 rounded-xl text-sm font-medium
+                  bg-[var(--accent)]
+                  text-[var(--foreground)]
+                  hover:opacity-90
+                  transition
+                "
               >
                 Upload
               </a>
@@ -184,7 +207,13 @@ export default function Home() {
               placeholder="Search…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] border border-[var(--muted)]/30"
+              className="
+                w-full sm:w-64
+                px-4 py-2 rounded-xl
+                bg-[var(--foreground)]
+                text-[var(--background)]
+                border border-[var(--muted)]/30
+              "
             />
           </div>
 
