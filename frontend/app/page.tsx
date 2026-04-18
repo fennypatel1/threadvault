@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 import ClothingCard from "./components/ClothingCard"
-import { demoItems } from "@/lib/demoData"
+import { demoItems } from "@/lib/demoData" // ✅ NEW
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,98 +34,55 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("")
   const [user, setUser] = useState<any>(null)
 
-
-  async function fetchUserClothes(userId: string) {
-  try {
-    const res = await fetch(`${API_URL}/clothes?user_id=${userId}`, {
-      cache: "no-store",
-    })
-
-    if (!res.ok) throw new Error("Failed")
-
-    const data = await res.json()
-    setClothes(data)
-  } catch (err) {
-    console.error(err)
-  } finally {
-    setLoading(false)
-  }
-}
-
   useEffect(() => {
-  let mounted = true
-
-  async function loadData() {
-    setLoading(true)
-
-    const { data } = await supabase.auth.getSession()
-    const sessionUser = data.session?.user ?? null
-
-    if (!mounted) return
-
-    setUser(sessionUser)
-
-    if (!sessionUser) {
-      // 🔥 DEMO MODE — HARD RESET
-      setClothes([...demoItems])
-      setLoading(false)
-      return
+    async function getUser() {
+      const { data } = await supabase.auth.getUser()
+      setUser(data.user)
     }
+    getUser()
+  }, [])
 
+  // 🔥 UPDATED FETCH
+  async function fetchClothes() {
     try {
-      const res = await fetch(`${API_URL}/clothes?user_id=${sessionUser.id}`, {
-        cache: "no-store",
-      })
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (!res.ok) throw new Error("Failed")
+      setUser(user)
 
-      const realData = await res.json()
-
-      if (!mounted) return
-
-      // 🔥 CRITICAL: overwrite, NOT merge
-      setClothes(realData)
-    } catch (err) {
-      console.error(err)
-    }
-
-    setLoading(false)
-  }
-
-  loadData()
-
-  const { data: listener } = supabase.auth.onAuthStateChange(
-    async (_event, session) => {
-      const currentUser = session?.user ?? null
-
-      setUser(currentUser)
-
-      if (!currentUser) {
-        // 🔥 HARD RESET AGAIN
-        setClothes([...demoItems])
+      if (!user) {
+        // ✅ DEMO MODE
+        const mappedDemo = demoItems.map((item) => ({
+          ...item,
+          image_url: item.image, // match your schema
+        }))
+        setClothes(mappedDemo)
+        setLoading(false)
         return
       }
 
-      try {
-        const res = await fetch(`${API_URL}/clothes?user_id=${currentUser.id}`)
-        const realData = await res.json()
-        setClothes(realData)
-      } catch (err) {
-        console.error(err)
-      }
+      const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
+        cache: "no-store",
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch clothes")
+
+      const data = await res.json()
+      setClothes(data)
+    } catch (err) {
+      console.error("Fetch clothes error:", err)
+    } finally {
+      setLoading(false)
     }
-  )
-
-  return () => {
-    mounted = false
-    listener.subscription.unsubscribe()
   }
-}, [])
 
-  const isDemo = !user
+  useEffect(() => {
+    fetchClothes()
+  }, [])
 
-  // ✅ DEMO-FRIENDLY DELETE
+  const isDemo = !user // ✅ NEW
+
   function handleDelete(id: string) {
+    if (isDemo) return // ✅ BLOCK IN DEMO
     setClothes((prev) => prev.filter((item) => item.id !== id))
   }
 
@@ -159,65 +116,51 @@ export default function Home() {
   if (loading) return <p className="p-6">Loading...</p>
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-12 bg-[#f5f5f0]">
+    <main className="max-w-7xl mx-auto px-6 py-12">
 
-      {/* DEMO BANNER */}
+      {/* 🔥 DEMO BANNER */}
       {isDemo && (
-        <div className="mb-10 flex justify-center">
-          <div className="px-5 py-2 rounded-full bg-white/70 backdrop-blur border text-sm flex items-center gap-2 shadow-sm">
-            <span className="text-gray-500">Demo</span>
-            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-            <button
-              onClick={() => (window.location.href = "/login")}
-              className="font-medium hover:underline"
-            >
-              Create your closet →
-            </button>
-          </div>
+        <div className="bg-blue-50 text-blue-800 text-sm py-3 text-center rounded-xl mb-6">
+          You’re viewing a demo —
+          <button
+            onClick={() => window.location.href = "/login"}
+            className="ml-2 underline font-medium"
+          >
+            Sign up to create your own closet
+          </button>
         </div>
       )}
 
-      {/* AUTH BUTTONS */}
+      {/* Top Right Auth */}
       <div className="flex justify-end mb-4">
         {user ? (
           <button
             onClick={async () => {
               await supabase.auth.signOut()
+              window.location.reload()
             }}
             className="text-sm px-4 py-2 bg-black text-white rounded"
           >
             Logout
           </button>
         ) : (
-          <div className="flex gap-3">
-            <a
-              href="/login"
-              className="text-sm px-4 py-2 bg-black text-white rounded"
-            >
-              Sign In
-            </a>
-
-            {/* 🔥 FIXED DEMO BUTTON */}
-            <button
-            onClick={async () => {
-              await supabase.auth.signOut()
-
-              // 🔥 FORCE RESET IMMEDIATELY
-              setUser(null)
-              setClothes([...demoItems])
-            }}
+          <a
+            href="/login"
+            className="text-sm px-4 py-2 bg-black text-white rounded"
           >
-            Try Demo
-          </button>
-          </div>
+            Sign In
+          </a>
         )}
       </div>
 
-      {/* EMPTY STATE (ONLY REAL USERS) */}
+      {/* ✅ EMPTY STATE (only for REAL users) */}
       {user && filteredClothes.length === 0 ? (
         <div className="py-24 text-center">
           <p className="text-lg font-medium mb-2">
             Your closet is empty
+          </p>
+          <p className="text-[var(--muted)] mb-4">
+            Add your first piece to start building your wardrobe.
           </p>
           <a
             href="/upload"
@@ -228,7 +171,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {/* HEADER */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-4xl font-medium tracking-tight mb-1">
@@ -242,25 +185,34 @@ export default function Home() {
             {user && (
               <a
                 href="/upload"
-                className="px-5 py-3 rounded-xl bg-[var(--accent)] text-white"
+                className="
+                  px-5 py-3 rounded-xl text-sm font-medium
+                  bg-[var(--accent)]
+                  text-[var(--foreground)]
+                  hover:opacity-90
+                  transition
+                "
               >
                 Upload
               </a>
             )}
           </div>
 
-          {/* FILTERS */}
+          {/* Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
             <div className="flex flex-wrap gap-3 items-center">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm capitalize ${
-                    selectedCategory === category
-                      ? "bg-black text-white"
-                      : "bg-white text-black border"
-                  }`}
+                  className={`
+                    px-4 py-2 rounded-full text-sm capitalize transition
+                    ${
+                      selectedCategory === category
+                        ? "bg-[var(--accent)] text-[var(--foreground)]"
+                        : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-80"
+                    }
+                  `}
                 >
                   {category} · {countByCategory(clothes, category)}
                 </button>
@@ -272,18 +224,24 @@ export default function Home() {
               placeholder="Search…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 px-4 py-2 rounded-xl border"
+              className="
+                w-full sm:w-64
+                px-4 py-2 rounded-xl
+                bg-[var(--foreground)]
+                text-[var(--background)]
+                border border-[var(--muted)]/30
+              "
             />
           </div>
 
-          {/* GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {/* Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
             {filteredClothes.map((item) => (
               <ClothingCard
                 key={item.id}
                 item={item}
                 onDelete={handleDelete}
-                isDemo={isDemo}
+                isDemo={isDemo} // ✅ NEW
               />
             ))}
           </div>
