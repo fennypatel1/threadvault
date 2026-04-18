@@ -3,7 +3,7 @@
 import { supabase } from "@/lib/supabase"
 import { useEffect, useState } from "react"
 import ClothingCard from "./components/ClothingCard"
-import { demoItems } from "@/lib/demoData" // ✅ NEW
+import { demoItems } from "@/lib/demoData"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,50 +34,46 @@ export default function Home() {
   const [newCategory, setNewCategory] = useState("")
   const [user, setUser] = useState<any>(null)
 
+  // 🔥 SINGLE SOURCE OF TRUTH
   useEffect(() => {
-    async function getUser() {
+    async function loadData() {
+      setLoading(true)
+
       const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-    }
-    getUser()
-  }, [])
+      const currentUser = data.user
 
-  // 🔥 UPDATED FETCH
-  async function fetchClothes() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
+      setUser(currentUser)
 
-      setUser(user)
-
-      if (!user) {
+      if (!currentUser) {
+        // ✅ DEMO MODE
         setClothes(demoItems)
         setLoading(false)
         return
       }
 
-      const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
-        cache: "no-store",
-      });
+      try {
+        const res = await fetch(`${API_URL}/clothes?user_id=${currentUser.id}`, {
+          cache: "no-store",
+        })
 
-      if (!res.ok) throw new Error("Failed to fetch clothes")
+        if (!res.ok) throw new Error("Failed to fetch clothes")
 
-      const data = await res.json()
-      setClothes(data)
-    } catch (err) {
-      console.error("Fetch clothes error:", err)
-    } finally {
+        const data = await res.json()
+        setClothes(data)
+      } catch (err) {
+        console.error("Fetch clothes error:", err)
+      }
+
       setLoading(false)
     }
-  }
 
-  useEffect(() => {
-    fetchClothes()
+    loadData()
   }, [])
 
-  const isDemo = !user // ✅ NEW
+  const isDemo = !user
 
+  // ✅ DEMO-FRIENDLY DELETE
   function handleDelete(id: string) {
-    if (isDemo) return // ✅ BLOCK IN DEMO
     setClothes((prev) => prev.filter((item) => item.id !== id))
   }
 
@@ -111,22 +107,25 @@ export default function Home() {
   if (loading) return <p className="p-6">Loading...</p>
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-12">
+    <main className="max-w-7xl mx-auto px-6 py-12 bg-[#f5f5f0]">
 
-      {/* 🔥 DEMO BANNER */}
+      {/* DEMO BANNER */}
       {isDemo && (
-        <div className="bg-blue-50 text-blue-800 text-sm py-3 text-center rounded-xl mb-6">
-          You’re viewing a demo —
-          <button
-            onClick={() => window.location.href = "/login"}
-            className="ml-2 underline font-medium"
-          >
-            Sign up to create your own closet
-          </button>
+        <div className="mb-10 flex justify-center">
+          <div className="px-5 py-2 rounded-full bg-white/70 backdrop-blur border text-sm flex items-center gap-2 shadow-sm">
+            <span className="text-gray-500">Demo</span>
+            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
+            <button
+              onClick={() => (window.location.href = "/login")}
+              className="font-medium hover:underline"
+            >
+              Create your closet →
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Top Right Auth */}
+      {/* AUTH BUTTONS */}
       <div className="flex justify-end mb-4">
         {user ? (
           <button
@@ -139,23 +138,32 @@ export default function Home() {
             Logout
           </button>
         ) : (
-          <a
-            href="/login"
-            className="text-sm px-4 py-2 bg-black text-white rounded"
-          >
-            Sign In
-          </a>
+          <div className="flex gap-3">
+            <a
+              href="/login"
+              className="text-sm px-4 py-2 bg-black text-white rounded"
+            >
+              Sign In
+            </a>
+
+            {/* 🔥 FIXED DEMO BUTTON */}
+            <button
+              onClick={() => {
+                window.location.reload()
+              }}
+              className="text-sm px-4 py-2 rounded border border-gray-300"
+            >
+              Try Demo
+            </button>
+          </div>
         )}
       </div>
 
-      {/* ✅ EMPTY STATE (only for REAL users) */}
+      {/* EMPTY STATE (ONLY REAL USERS) */}
       {user && filteredClothes.length === 0 ? (
         <div className="py-24 text-center">
           <p className="text-lg font-medium mb-2">
             Your closet is empty
-          </p>
-          <p className="text-[var(--muted)] mb-4">
-            Add your first piece to start building your wardrobe.
           </p>
           <a
             href="/upload"
@@ -166,7 +174,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          {/* Header */}
+          {/* HEADER */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-4xl font-medium tracking-tight mb-1">
@@ -180,34 +188,25 @@ export default function Home() {
             {user && (
               <a
                 href="/upload"
-                className="
-                  px-5 py-3 rounded-xl text-sm font-medium
-                  bg-[var(--accent)]
-                  text-[var(--foreground)]
-                  hover:opacity-90
-                  transition
-                "
+                className="px-5 py-3 rounded-xl bg-[var(--accent)] text-white"
               >
                 Upload
               </a>
             )}
           </div>
 
-          {/* Filters */}
+          {/* FILTERS */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
             <div className="flex flex-wrap gap-3 items-center">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`
-                    px-4 py-2 rounded-full text-sm capitalize transition
-                    ${
-                      selectedCategory === category
-                        ? "bg-[var(--accent)] text-[var(--foreground)]"
-                        : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-80"
-                    }
-                  `}
+                  className={`px-4 py-2 rounded-full text-sm capitalize ${
+                    selectedCategory === category
+                      ? "bg-black text-white"
+                      : "bg-white text-black border"
+                  }`}
                 >
                   {category} · {countByCategory(clothes, category)}
                 </button>
@@ -219,24 +218,18 @@ export default function Home() {
               placeholder="Search…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="
-                w-full sm:w-64
-                px-4 py-2 rounded-xl
-                bg-[var(--foreground)]
-                text-[var(--background)]
-                border border-[var(--muted)]/30
-              "
+              className="w-full sm:w-64 px-4 py-2 rounded-xl border"
             />
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
+          {/* GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredClothes.map((item) => (
               <ClothingCard
                 key={item.id}
                 item={item}
                 onDelete={handleDelete}
-                isDemo={isDemo} // ✅ NEW
+                isDemo={isDemo}
               />
             ))}
           </div>
