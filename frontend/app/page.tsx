@@ -111,13 +111,13 @@ export default function Home() {
       {/* HERO — demo viewers only */}
 {isDemo && (
   <div className="text-center py-10 mb-4">
-    <h2 className="text-3xl font-medium tracking-tight mb-3">
+    <h2 className="text-5xl font-semibold tracking-tight mb-4">
       Your wardrobe, organized digitally
     </h2>
-    <p className="text-[var(--muted)] max-w-md mx-auto mb-6 text-sm">
+    <p className="text-[var(--muted)] max-w-xl mx-auto mb-8 text-base leading-relaxed">
       ThreadVault lets you catalog your clothes, browse by category, and plan outfits — without digging through your closet.
     </p>
-    <div className="flex flex-wrap justify-center gap-4 text-sm text-[var(--muted)] mb-8">
+    <div className="flex flex-wrap justify-center gap-6 text-sm text-[var(--muted)]/80 mb-10">
       <span>✦ Upload & organize clothes</span>
       <span>✦ Browse by category</span>
       <span>✦ Search your wardrobe</span>
@@ -126,7 +126,7 @@ export default function Home() {
 
     <a
       href="/login"
-      className="px-6 py-3 rounded-xl bg-[var(--accent)] text-[var(--foreground)] font-medium hover:opacity-90 transition text-sm"
+      className="px-7 py-3.5 text-base rounded-xl bg-[var(--accent)] text-[var(--foreground)] font-medium hover:opacity-90 transition text-sm"
     >
       Sign up to build yours →
     </a>
