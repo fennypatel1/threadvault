@@ -14,10 +14,7 @@ type ClothingItem = {
   image_url?: string | null
 }
 
-function countByCategory(
-  clothes: ClothingItem[],
-  category: string
-) {
+function countByCategory(clothes: ClothingItem[], category: string) {
   if (category === "all") return clothes.length
   return clothes.filter(
     (item) => item.category.toLowerCase() === category
@@ -40,7 +37,6 @@ export default function Home() {
       setUser(user)
 
       if (!user) {
-        // ✅ DEMO MODE
         setClothes(demoItems)
         setLoading(false)
         return
@@ -48,10 +44,8 @@ export default function Home() {
 
       const res = await fetch(`${API_URL}/clothes?user_id=${user.id}`, {
         cache: "no-store",
-      });
-
+      })
       if (!res.ok) throw new Error("Failed to fetch clothes")
-
       const data = await res.json()
       setClothes(data)
     } catch (err) {
@@ -139,12 +133,11 @@ export default function Home() {
       {/* EMPTY STATE */}
       {user && filteredClothes.length === 0 ? (
         <div className="py-24 text-center">
-          <p className="text-lg font-medium mb-2">
-            Your closet is empty
-          </p>
+          <p className="text-lg font-medium mb-2">Your closet is empty</p>
           <p className="text-[var(--muted)] mb-4">
             Add your first piece to start building your wardrobe.
           </p>
+
           <a
             href="/upload"
             className="px-5 py-3 bg-[var(--accent)] text-[var(--foreground)] rounded-xl"
@@ -168,13 +161,7 @@ export default function Home() {
             {user && (
               <a
                 href="/upload"
-                className="
-                  px-5 py-3 rounded-xl text-sm font-medium
-                  bg-[var(--accent)]
-                  text-[var(--foreground)]
-                  hover:opacity-90
-                  transition
-                "
+                className="px-5 py-3 rounded-xl text-sm font-medium bg-[var(--accent)] text-[var(--foreground)] hover:opacity-90 transition"
               >
                 Upload
               </a>
@@ -200,6 +187,43 @@ export default function Home() {
                   {category} · {countByCategory(clothes, category)}
                 </button>
               ))}
+
+              {user && !showCategoryInput && (
+                <button
+                  onClick={() => setShowCategoryInput(true)}
+                  className="px-4 py-2 rounded-full text-sm border border-dashed border-[var(--muted)]/40 text-[var(--muted)] hover:opacity-80 transition"
+                >
+                  + Add
+                </button>
+              )}
+
+              {user && showCategoryInput && (
+                <div className="flex gap-2 items-center">
+                  <input
+                    autoFocus
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddCategory()}
+                    placeholder="Category name"
+                    className="px-3 py-1 rounded-xl border border-[var(--muted)]/30 text-sm bg-transparent text-[var(--foreground)]"
+                  />
+                  <button
+                    onClick={handleAddCategory}
+                    className="px-3 py-1 rounded-xl bg-[var(--accent)] text-[var(--foreground)] text-sm"
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCategoryInput(false)
+                      setNewCategory("")
+                    }}
+                    className="text-sm text-[var(--muted)] hover:underline"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
 
             <input
@@ -207,13 +231,7 @@ export default function Home() {
               placeholder="Search…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="
-                w-full sm:w-64
-                px-4 py-2 rounded-xl
-                bg-[var(--foreground)]
-                text-[var(--background)]
-                border border-[var(--muted)]/30
-              "
+              className="w-full sm:w-64 px-4 py-2 rounded-xl bg-[var(--foreground)] text-[var(--background)] border border-[var(--muted)]/30"
             />
           </div>
 

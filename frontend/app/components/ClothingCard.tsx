@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { MoreHorizontal } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -31,8 +32,7 @@ export default function ClothingCard({
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
   async function handleDeleteClick() {
@@ -41,7 +41,10 @@ export default function ClothingCard({
     const confirmed = confirm(`Delete "${item.name}"?`)
     if (!confirmed) return
 
-    await fetch(`${API_URL}/clothes/${item.id}`, {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await fetch(`${API_URL}/clothes/${item.id}?user_id=${user.id}`, {
       method: "DELETE",
     })
 
@@ -51,7 +54,6 @@ export default function ClothingCard({
   return (
     <div className="relative bg-[var(--foreground)] text-[var(--background)] rounded-2xl overflow-hidden hover:shadow-lg transition">
 
-      {/* ⋯ MENU */}
       {!isDemo && (
         <div ref={menuRef} className="absolute top-3 right-3 z-10">
           <button
@@ -63,12 +65,15 @@ export default function ClothingCard({
 
           {open && (
             <div className="absolute right-0 mt-2 w-28 bg-white rounded-xl shadow border text-sm">
+              
+              {/* ✅ FIXED EDIT LINK */}
               <a
                 href={`/edit/${item.id}`}
-                className="block px-3 py-2 hover:bg-gray-100"
+                className="block px-3 py-2 hover:bg-gray-100 text-black"
               >
                 Edit
               </a>
+
               <button
                 onClick={handleDeleteClick}
                 className="block w-full text-left px-3 py-2 hover:bg-gray-100 text-red-500"
@@ -90,9 +95,7 @@ export default function ClothingCard({
 
       <div className="p-4">
         <h3 className="font-medium text-lg">{item.name}</h3>
-        <p className="text-sm text-[var(--muted)] capitalize">
-          {item.category}
-        </p>
+        <p className="text-sm text-[var(--muted)] capitalize">{item.category}</p>
       </div>
     </div>
   )
