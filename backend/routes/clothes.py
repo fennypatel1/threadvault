@@ -79,7 +79,7 @@ def get_clothing_by_id(item_id: str):
 
     return ClothingItem(id=row[0], name=row[1], category=row[2], image_url=row[3])
 
-
+@router.put("/clothes/{item_id}", response_model=ClothingItem)
 def update_clothing(
     item_id: str,
     name: str = Form(...),
