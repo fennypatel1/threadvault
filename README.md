@@ -51,12 +51,26 @@ ThreadVault v1 is considered successful if users:
 
 ## **Tech Stack**
 - Backend: FastAPI
-- Database: SQLite
+- Database: Supabase (PostgreSQL)
+- Image Storage: Cloudinary
 - Frontend: 
   - Next.js (routing, app structure)
   - React (components, hooks)
   - TypeScript (typed state and props)
   - Tailwind CSS (utility-first styling)
+ 
+## **System Design**
+- Decoupled frontend and backend architecture
+- RESTful API built with FastAPI for CRUD operations
+- Cloud-hosted PostgreSQL database via Supabase for persistent storage
+- Image uploads handled via Cloudinary for scalable media storage
+- Client-side state management for responsive UI updates
+ 
+## **Deployment**
+- Frontend: Vercel
+- Backend: Render
+- Database: Supabase
+- Media Storage: Cloudinary
 
 ## **Documentation**
 Detailed product documentation is available in the /docs directory, including:
