@@ -45,6 +45,21 @@ ThreadVault v1 focuses on foundational wardrobe visibility rather than automatio
 
 The MVP is intentionally lightweight to reduce onboarding friction and support gradual adoption over time.
 
+## System Architecture:
+<img width="1227" height="733" alt="Screenshot 2026-04-24 at 11 46 06 AM" src="https://github.com/user-attachments/assets/57a69df4-0d43-4f64-871e-ca8c732c7f58" />
+ThreadVault uses a modern, decoupled architecture:
+- Frontend (Next.js + React): Handles UI, state management, and user interactions
+- Backend (FastAPI): Provides RESTful APIs for CRUD operations
+- Database (Supabase / PostgreSQL): Stores structured wardrobe data
+- Media Storage (Cloudinary): Handles image uploads and delivery
+
+**Data Flow:**
+- User uploads clothing item
+- Image is stored in Cloudinary
+- Metadata (name, category, image URL) is stored in Supabase
+- Frontend fetches and renders items via FastAPI APIs
+This architecture enables scalability, separation of concerns, and real-world deployment patterns.
+
 ## Key Product Decisions
 - Prioritized wardrobe cataloging first to address the core issue of forgetting owned items.
 - Deferred AI and automation until sufficient wardrobe data exists.
@@ -66,6 +81,32 @@ Features are sequenced based on data readiness and user engagement rather than n
 - Incomplete wardrobes: Ensure partial wardrobes still provide value
 - Privacy concerns: Default wardrobes to private and avoid social sharing in v1
 - Low return usage: Emphasize everyday browsing and visual awareness
+
+## Metrics & Evaluation
+To evaluate whether ThreadVault successfully reduces outfit-planning friction, the following metrics are tracked:
+
+**Adoption Metrics:**
+- Number of items added per user
+- % of users who upload at least 5 items (initial activation threshold)
+  
+**Engagement Metrics:**
+- Weekly active users (WAU)
+- Average sessions per user per week
+- Frequency of wardrobe browsing (view events)
+  
+**Retention Signals:**
+- % of users returning after initial setup
+- Time between sessions
+  
+**Qualitative Metrics:**
+- Self-reported reduction in outfit planning time
+- User feedback on ease of finding outfits
+- Perceived usefulness of visual wardrobe organization
+  
+**Success Criteria (v1 targets):**
+- Users upload ≥5 items within first session
+- Users return at least once within a week
+- Users report reduced friction in outfit planning
 
 ## Outcome & Learnings
 Early validation showed strong interest in a visual wardrobe system that reduces cognitive load during outfit planning. This project reinforced the importance of sequencing features based on user readiness and avoiding premature complexity.
